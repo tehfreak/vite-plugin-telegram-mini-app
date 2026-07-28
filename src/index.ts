@@ -79,7 +79,6 @@ export function tma(options: Options = {}): Plugin {
 
 	async function payload(): Promise<Payload> {
 		const { user, overrides } = readState(stateFile)
-		// The hash stays valid; only auth_date is past the TTL, so the backend must refuse it.
 		const authDate = overrides.expired ? Math.floor(Date.now() / 1000) - EXPIRED_OFFSET_SECONDS : undefined
 		const initData = user && botToken ? signInitData(user, botToken, authDate) : ''
 

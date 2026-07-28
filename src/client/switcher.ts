@@ -59,7 +59,6 @@ export function mountSwitcher(payload: Payload, eruda?: () => void) {
 
 	const toggle = (title: string, subtitle: string, on: boolean, onPick: () => void) => row(`${on ? '● ' : '○ '}${title}`, subtitle, on, onPick)
 
-	// Kept out of build(): recreating the input would drop focus and caret on every keystroke.
 	const search = element('input', 'width:100%;margin-bottom:6px;padding:6px 8px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit;font-size:12px') as HTMLInputElement
 	search.placeholder = 'Search by name, @username or id'
 	search.addEventListener('input', () => {

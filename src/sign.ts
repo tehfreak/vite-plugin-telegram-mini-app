@@ -6,7 +6,6 @@ export function signInitData(user: TelegramUser, botToken: string, authDate = Ma
 	params.set('user', JSON.stringify({ ...user, id: Number(user.id) }))
 	params.set('auth_date', String(authDate))
 	params.set('query_id', 'dev')
-	// Required by the @tma.js schema. It cannot be forged, but it joins the HMAC like any other field.
 	params.set('signature', 'tma-mock')
 
 	const dataCheckString = [...params]

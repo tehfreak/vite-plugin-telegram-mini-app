@@ -20,7 +20,6 @@ export function writeState(file: string, state: State) {
 	writeFileSync(file, `${JSON.stringify(state, null, '\t')}\n`)
 }
 
-/** `overrides: null` resets them, because merging alone cannot delete keys. */
 export function patchState(current: State, patch: { user?: TelegramUser | null; overrides?: Overrides | null }): State {
 	return {
 		user: patch.user === undefined ? current.user : patch.user,

@@ -85,7 +85,6 @@ export function createWebApp(payload: Payload) {
 		colorScheme: theme.name,
 		themeParams: theme.params,
 		isExpanded: true,
-		// Getters, not a snapshot: an async entry script can read these before any readiness event.
 		get viewportHeight() {
 			return height()
 		},

@@ -40,7 +40,7 @@ export type Overrides = {
 	theme?: ThemeSetting
 	platform?: string
 	version?: string
-	/** Sign with a day-old `auth_date` so the backend has to reject such initData. */
+	/** Sign with a day-old `auth_date` so the backend has to reject such initData. The hash stays valid, only the age is off. */
 	expired?: boolean
 	/**
 	 * Do not install the mock at all. The app sees a plain browser, where Telegram hands over

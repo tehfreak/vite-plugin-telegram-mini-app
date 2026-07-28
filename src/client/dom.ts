@@ -145,7 +145,6 @@ export function createPanel(options: { eruda?: () => void } = {}): Panel | null 
 	let start: Position = { x: 0, y: 0 }
 	let origin: Position = { x: 0, y: 0 }
 
-	// Pointer capture is an optimisation: a refusal must not break dragging or clicking.
 	const capture = (method: 'setPointerCapture' | 'releasePointerCapture', pointerId: number) => {
 		try {
 			badge[method](pointerId)

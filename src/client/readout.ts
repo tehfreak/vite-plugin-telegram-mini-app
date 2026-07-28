@@ -44,7 +44,6 @@ export function initDataRows(raw: string): { user: Rows; init: Rows } {
 	return { user: user ? Object.entries(user) : [], init }
 }
 
-/** The active tab is remembered because switching identity reloads the page. */
 export function tabStrip(key: string, titles: string[], onSelect: (index: number) => void): { strip: HTMLElement; active: number } {
 	const stored = Number(sessionStorage.getItem(key) ?? 0)
 	const active = Number.isInteger(stored) && stored >= 0 && stored < titles.length ? stored : 0

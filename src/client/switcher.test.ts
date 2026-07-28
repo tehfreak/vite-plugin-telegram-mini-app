@@ -40,6 +40,8 @@ const open = (badge: HTMLElement) => {
 	return badge.nextElementSibling as HTMLElement
 }
 
+const tab = (shell: HTMLElement, title: string) => [...shell.querySelectorAll('button')].find((button) => button.textContent === title)!
+
 beforeEach(() => {
 	sessionStorage.clear()
 	localStorage.clear()
@@ -66,4 +68,16 @@ test('asks for the roster once, not on every open', async () => {
 	open(badge)
 
 	expect(fetched).toHaveBeenCalledTimes(1)
+})
+
+test('keeps the search box across a rebuild, so the typed text is not dropped', async () => {
+	const badge = await mount()
+	const shell = open(badge)
+	const search = shell.querySelector('input')!
+	search.value = 'ann'
+
+	tab(shell, 'identity').click()
+
+	expect(shell.querySelector('input')).toBe(search)
+	expect(shell.querySelector('input')!.value).toBe('ann')
 })

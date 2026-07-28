@@ -3,6 +3,7 @@ import { beforeEach, expect, test, vi } from 'vitest'
 import type { Panel } from './dom.js'
 
 const HOST = 'tma-panel'
+const POSITION = 'tma-panel-position'
 
 beforeEach(() => localStorage.clear())
 
@@ -18,6 +19,13 @@ async function mount(): Promise<Panel> {
 const shadow = () => document.getElementById(HOST)!.shadowRoot!
 
 const shell = (badge: HTMLElement) => badge.nextElementSibling as HTMLElement
+
+function drag(badge: HTMLElement, [fromX, fromY]: [number, number], [toX, toY]: [number, number]) {
+	const send = (type: string, x: number, y: number) => badge.dispatchEvent(Object.assign(new Event(type), { clientX: x, clientY: y, pointerId: 1 }))
+	send('pointerdown', fromX, fromY)
+	send('pointermove', toX, toY)
+	send('pointerup', toX, toY)
+}
 
 test('paints the badge and the shell from the palette', async () => {
 	const { badge, paint } = await mount()
@@ -79,6 +87,39 @@ test('repaints every time, so a theme switch reaches the whole panel', async () 
 	expect(badge.style.background).toBe('#17212b')
 	expect(button.style.background).toBe('#232e3c')
 	expect(button.style.color).toBe('#f5f5f5')
+})
+
+test('still drags when the browser refuses pointer capture', async () => {
+	localStorage.setItem(POSITION, JSON.stringify({ x: 100, y: 100 }))
+	const { badge } = await mount()
+	badge.setPointerCapture = () => {
+		throw new Error('refused')
+	}
+
+	drag(badge, [0, 0], [60, 40])
+
+	expect(badge.style.left).toBe('160px')
+	expect(badge.style.top).toBe('140px')
+	expect(JSON.parse(localStorage.getItem(POSITION)!)).toEqual({ x: 160, y: 140 })
+})
+
+test('still opens on a tap when the browser refuses pointer capture', async () => {
+	const { badge } = await mount()
+	badge.setPointerCapture = () => {
+		throw new Error('refused')
+	}
+
+	drag(badge, [10, 10], [10, 10])
+
+	expect(shell(badge).style.display).toBe('flex')
+})
+
+test('takes a drag for a drag and not for a tap, so the panel does not open under the finger', async () => {
+	const { badge } = await mount()
+
+	drag(badge, [0, 0], [60, 40])
+
+	expect(shell(badge).style.display).toBe('none')
 })
 
 test('the scrolling container carries the class the stylesheet thins', async () => {
