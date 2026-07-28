@@ -23,5 +23,6 @@ export function launchParams(): URLSearchParams {
 
 export function detectEnvironment(): Environment {
 	if (webApp()?.initData) return 'telegram'
-	return launchParams().has('tgWebAppData') ? 'telegram' : 'browser'
+	for (const key of launchParams().keys()) if (key.startsWith('tgWebApp')) return 'telegram'
+	return 'browser'
 }
