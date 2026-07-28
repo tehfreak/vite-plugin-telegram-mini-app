@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-telegram-mini-app",
-	"version": "0.1.2",
+	"version": "0.2.0",
 	"description": "Telegram Mini App dev tooling for Vite: real signed initData in a plain browser, a WebApp mock and a debug panel that doubles as an inspector inside Telegram.",
 	"keywords": [
 		"devtools",
