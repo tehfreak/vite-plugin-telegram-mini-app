@@ -1,7 +1,7 @@
 import type { Payload } from '../types.js'
 import { createBackButton, createMainButton } from './chrome.js'
 import { whenReady } from './dom.js'
-import { currentTheme, onTheme } from './theme.js'
+import { applyThemeVariables, currentTheme, onTheme } from './theme.js'
 import { height, keyboardShown, onViewport, stableHeight } from './viewport.js'
 
 type Handler = (...args: unknown[]) => void
@@ -174,12 +174,15 @@ export function createWebApp(payload: Payload) {
 		},
 	}
 
+	applyThemeVariables(theme)
+
 	onTheme((next) => {
 		webApp.colorScheme = next.name
 		webApp.themeParams = next.params
 		webApp.headerColor = next.params.header_bg_color ?? webApp.headerColor
 		webApp.backgroundColor = next.params.bg_color ?? webApp.backgroundColor
 		webApp.MainButton.repaint(next.params)
+		applyThemeVariables(next)
 		emit('themeChanged')
 	})
 

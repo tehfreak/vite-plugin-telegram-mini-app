@@ -38,3 +38,10 @@ export function setTheme(next: ThemeSetting) {
 export function onTheme(listener: (theme: Theme) => void) {
 	listeners.add(listener)
 }
+
+/** telegram-web-app.js publishes the palette as CSS variables, and apps style themselves from those. */
+export function applyThemeVariables(theme: Theme) {
+	for (const [key, value] of Object.entries(theme.params)) {
+		document.documentElement.style.setProperty(`--tg-theme-${key.replaceAll('_', '-')}`, value)
+	}
+}
