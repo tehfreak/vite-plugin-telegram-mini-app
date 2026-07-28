@@ -18,7 +18,6 @@ async function patch(payload: Payload, body: { user?: TelegramUser | null; overr
 }
 
 export function mountSwitcher(payload: Payload, eruda?: () => void) {
-	// Loaded on first open: the roster can be large and may hit a database.
 	let page: RosterPage | null = null
 	let query = ''
 	let timer = 0
@@ -92,7 +91,6 @@ export function mountSwitcher(payload: Payload, eruda?: () => void) {
 
 	function buildIdentity() {
 		panel.append(search, list)
-		if (!page) void loadRoster()
 		renderList()
 	}
 
