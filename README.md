@@ -1,8 +1,8 @@
 # vite-plugin-telegram-mini-app
 
 [![npm](https://img.shields.io/npm/v/vite-plugin-telegram-mini-app)](https://www.npmjs.com/package/vite-plugin-telegram-mini-app)
-[![CI](https://github.com/tehfreak/vite-plugin-telegram-mini-app/actions/workflows/ci.yml/badge.svg)](https://github.com/tehfreak/vite-plugin-telegram-mini-app/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/vite-plugin-telegram-mini-app)](LICENSE)
+[![CI](https://github.com/tehfreak/vite-plugin-telegram-mini-app/actions/workflows/ci.yml/badge.svg)](https://github.com/tehfreak/vite-plugin-telegram-mini-app/actions/workflows/ci.yml)
 
 Run a Telegram Mini App in a plain browser during development, with a debug panel that also works
 inside Telegram.
