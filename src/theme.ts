@@ -1,0 +1,38 @@
+import type { ThemeName } from './types.js'
+
+export const THEMES: Record<ThemeName, Record<string, string>> = {
+	light: {
+		bg_color: '#ffffff',
+		text_color: '#000000',
+		hint_color: '#707579',
+		link_color: '#3390ec',
+		button_color: '#3390ec',
+		button_text_color: '#ffffff',
+		secondary_bg_color: '#f4f4f5',
+		header_bg_color: '#ffffff',
+		bottom_bar_bg_color: '#f4f4f5',
+		accent_text_color: '#3390ec',
+		section_bg_color: '#ffffff',
+		section_header_text_color: '#3390ec',
+		section_separator_color: '#e5e5e6',
+		subtitle_text_color: '#707579',
+		destructive_text_color: '#e53935',
+	},
+	dark: {
+		bg_color: '#212121',
+		text_color: '#ffffff',
+		hint_color: '#aaaaaa',
+		link_color: '#6ab3f3',
+		button_color: '#8774e1',
+		button_text_color: '#ffffff',
+		secondary_bg_color: '#181818',
+		header_bg_color: '#212121',
+		bottom_bar_bg_color: '#181818',
+		accent_text_color: '#6ab3f3',
+		section_bg_color: '#212121',
+		section_header_text_color: '#6ab3f3',
+		section_separator_color: '#0f0f0f',
+		subtitle_text_color: '#aaaaaa',
+		destructive_text_color: '#ec3942',
+	},
+}

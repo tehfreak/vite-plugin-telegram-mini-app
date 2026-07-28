@@ -1,0 +1,10 @@
+{
+	"name": "@playground/tmajs",
+	"private": true,
+	"type": "module",
+	"devDependencies": {
+		"@tma.js/sdk": "^3.3.0",
+		"eruda": "^3.4.3",
+		"vite-plugin-telegram-mini-app": "file:../.."
+	}
+}

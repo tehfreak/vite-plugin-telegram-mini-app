@@ -1,0 +1,9 @@
+{
+	"name": "@playground/webapp",
+	"private": true,
+	"type": "module",
+	"devDependencies": {
+		"eruda": "^3.4.3",
+		"vite-plugin-telegram-mini-app": "file:../.."
+	}
+}

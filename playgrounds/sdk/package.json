@@ -1,0 +1,10 @@
+{
+	"name": "@playground/sdk",
+	"private": true,
+	"type": "module",
+	"devDependencies": {
+		"@telegram-apps/sdk": "^3.11.8",
+		"eruda": "^3.4.3",
+		"vite-plugin-telegram-mini-app": "file:../.."
+	}
+}

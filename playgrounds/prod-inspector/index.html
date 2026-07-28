@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>tma playground · inspector without the plugin</title>
+		<script src="https://telegram.org/js/telegram-web-app.js"></script>
+	</head>
+	<body>
+		<main style="font-family: sans-serif; padding: 16px; max-width: 640px">
+			<h1 style="font-size: 20px">Inspector without the plugin</h1>
+			<p style="font-size: 13px; color: #707579">
+				The plugin is not in this config — the app imports <code>vite-plugin-telegram-mini-app/inspector</code> itself, the way it would in production. The panel only mounts from the button below: that button stands in for a role
+				check.
+			</p>
+			<pre id="out" style="white-space: pre-wrap; word-break: break-all; font-size: 12px; background: #f4f4f5; padding: 12px; border-radius: 8px"></pre>
+			<button id="mount">Mount the inspector</button>
+			<button id="launch">Open "as from Telegram"</button>
+		</main>
+		<script type="module" src="/src/main.ts"></script>
+	</body>
+</html>

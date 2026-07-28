@@ -1,0 +1,80 @@
+{
+	"name": "vite-plugin-telegram-mini-app",
+	"version": "0.1.0",
+	"description": "Telegram Mini App dev tooling for Vite: real signed initData in a plain browser, a WebApp mock and a debug panel that doubles as an inspector inside Telegram.",
+	"keywords": [
+		"devtools",
+		"initdata",
+		"inspector",
+		"mock",
+		"telegram",
+		"telegram-mini-apps",
+		"tma",
+		"vite-plugin"
+	],
+	"homepage": "https://github.com/tehfreak/vite-plugin-telegram-mini-app#readme",
+	"bugs": {
+		"url": "https://github.com/tehfreak/vite-plugin-telegram-mini-app/issues"
+	},
+	"license": "MIT",
+	"author": "Mickh <tehfreak@tehfreak.com>",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/tehfreak/vite-plugin-telegram-mini-app.git"
+	},
+	"workspaces": [
+		"playgrounds/*"
+	],
+	"files": [
+		"dist",
+		"src",
+		"!src/**/*.test.ts",
+		"README.md",
+		"LICENSE"
+	],
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./inspector": {
+			"types": "./dist/inspector.d.ts",
+			"default": "./dist/inspector.js"
+		}
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"prebuild": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"lint": "oxlint",
+		"format": "oxfmt --write .",
+		"format:check": "oxfmt --check .",
+		"prepublishOnly": "npm run build && npm run typecheck && npm run lint && npm test",
+		"playground:webapp": "npm run build && vite --config playgrounds/webapp/vite.config.ts",
+		"playground:sdk": "npm run build && vite --config playgrounds/sdk/vite.config.ts",
+		"playground:tmajs": "npm run build && vite --config playgrounds/tmajs/vite.config.ts",
+		"playground:rr": "npm run build && vite --config playgrounds/react-router/vite.config.ts",
+		"playground:inspector": "npm run build && vite --config playgrounds/prod-inspector/vite.config.ts"
+	},
+	"devDependencies": {
+		"@types/node": "^20.19",
+		"oxfmt": "^0.58.0",
+		"oxlint": "^1.73.0",
+		"typescript": "^7.0.2",
+		"vite": "^8.0.3",
+		"vitest": "^3"
+	},
+	"peerDependencies": {
+		"vite": ">=6"
+	},
+	"engines": {
+		"node": "^20.19.0 || >=22.12.0"
+	}
+}
