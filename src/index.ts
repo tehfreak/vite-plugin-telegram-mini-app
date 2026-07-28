@@ -2,21 +2,12 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { IncomingMessage } from 'node:http'
 import { normalizePath, type Plugin, type ViteDevServer } from 'vite'
-import { signInitData, toUnsafe } from './sign.js'
+import { ENDPOINT, USERS_ENDPOINT, bootScript as buildBootScript, bootTag as buildBootTag, buildPayload, inject, injectable, searchRoster } from './serve.js'
 import { patchState, readState, writeState } from './state.js'
-import { THEMES } from './theme.js'
-import type { Options, Overrides, Payload, RosterPage, TelegramUser } from './types.js'
+import type { Options, Overrides, TelegramUser } from './types.js'
 
 export type { Mode, Options, Payload, TelegramUser, ThemeName } from './types.js'
 
-const ENDPOINT = '/__tma/state'
-const USERS_ENDPOINT = '/__tma/users'
-const EXPIRED_OFFSET_SECONDS = 25 * 60 * 60
-const ROSTER_LIMIT = 20
-// Vite extracts inline modules into html-proxy, so a marker inside the script text disappears
-// from the HTML and the middleware injects a second copy. A meta tag survives that.
-const MARKER_ATTR = 'name="tma-mock"'
-const MARKER_TAG = `<meta ${MARKER_ATTR} content="1">`
 // mockTelegramEnv keeps state in its own module instance, so the app and the plugin must import
 // the same package. @tma.js/* is the current generation, @telegram-apps/* the previous one.
 const SDK_MODULES = ['@tma.js/sdk', '@tma.js/bridge', '@telegram-apps/sdk', '@telegram-apps/bridge']
@@ -38,13 +29,15 @@ function createResolver(server: ViteDevServer): (id: string) => Promise<boolean>
 }
 
 export function tma(options: Options = {}): Plugin {
-	const botToken = options.botToken ?? process.env.TELEGRAM_BOT_TOKEN ?? ''
-	const theme = options.theme ?? 'auto'
-	const platform = options.platform ?? 'tdesktop'
-	const version = options.version ?? '7.0'
-	const startParam = options.startParam ?? ''
-	const panel = options.panel ?? true
-	const eruda = options.eruda ?? true
+	const settings = {
+		botToken: options.botToken ?? process.env.TELEGRAM_BOT_TOKEN ?? '',
+		theme: options.theme ?? 'auto',
+		platform: options.platform ?? 'tdesktop',
+		version: options.version ?? '7.0',
+		startParam: options.startParam ?? '',
+		panel: options.panel ?? true,
+		eruda: options.eruda ?? true,
+	}
 
 	let stateFile = ''
 	let sdkModule: string | null = null
@@ -68,9 +61,9 @@ export function tma(options: Options = {}): Plugin {
 			if (mode === 'sdk' && !sdkModule) server.config.logger.error('[tma] mode: "sdk", but neither @tma.js/* nor @telegram-apps/* resolves from the project root')
 		}
 
-		if (eruda) erudaInstalled = await resolvable('eruda')
+		if (settings.eruda) erudaInstalled = await resolvable('eruda')
 
-		server.config.logger.info(`[tma] mode: ${sdkModule ? `sdk (${sdkModule})` : 'webapp'}${eruda ? `, console: ${erudaInstalled ? 'eruda from the project' : 'eruda from CDN'}` : ''}`)
+		server.config.logger.info(`[tma] mode: ${sdkModule ? `sdk (${sdkModule})` : 'webapp'}${settings.eruda ? `, console: ${erudaInstalled ? 'eruda from the project' : 'eruda from CDN'}` : ''}`)
 	}
 
 	async function roster(): Promise<TelegramUser[]> {
@@ -78,48 +71,13 @@ export function tma(options: Options = {}): Plugin {
 		return typeof users === 'function' ? await users() : (users ?? [])
 	}
 
-	async function payload(): Promise<Payload> {
-		const { user, overrides } = readState(stateFile)
-		const authDate = overrides.expired ? Math.floor(Date.now() / 1000) - EXPIRED_OFFSET_SECONDS : undefined
-		const start = overrides.startParam ?? startParam
-		const initData = user && botToken ? signInitData(user, botToken, authDate, start) : ''
-
-		return {
-			initData,
-			initDataUnsafe: initData ? toUnsafe(initData) : {},
-			current: user,
-			theme: overrides.theme ?? theme,
-			themes: THEMES,
-			platform: overrides.platform ?? platform,
-			version: overrides.version ?? version,
-			startParam: start,
-			overrides,
-			browser: overrides.browser === true,
-			panel,
-			eruda,
-			endpoint: ENDPOINT,
-			usersEndpoint: USERS_ENDPOINT,
-		}
-	}
-
-	function matches(user: TelegramUser, query: string): boolean {
-		if (!query) return true
-		const haystack = [user.first_name, user.last_name, user.username, String(user.id)].filter(Boolean).join(' ').toLowerCase()
-		return haystack.includes(query.toLowerCase())
-	}
-
 	async function bootScript(): Promise<string> {
 		if (detection) await detection
-		const data = JSON.stringify(await payload())
-		const deps = erudaInstalled ? `{ loadEruda: () => import('eruda') }` : '{}'
-
-		if (!sdkModule) return `import { install } from ${JSON.stringify(clientUrl)}\ninstall(${data}, ${deps})`
-
-		return [`import { mockTelegramEnv, emitEvent } from ${JSON.stringify(sdkModule)}`, `import { installSdk } from ${JSON.stringify(clientUrl)}`, `installSdk(${data}, { mockTelegramEnv, emitEvent, ...${deps} })`].join('\n')
+		return buildBootScript(buildPayload(settings, readState(stateFile)), clientUrl, sdkModule, erudaInstalled)
 	}
 
 	async function bootTag(): Promise<string> {
-		return `${MARKER_TAG}<script type="module">${await bootScript()}</script>`
+		return buildBootTag(await bootScript())
 	}
 
 	return {
@@ -133,7 +91,7 @@ export function tma(options: Options = {}): Plugin {
 			config.server.fs.allow.push(packageDir)
 
 			stateFile = options.stateFile ? resolve(config.root, options.stateFile) : join(config.cacheDir, 'tma-mock-identity.json')
-			if (!botToken) config.logger.warn('[tma] no TELEGRAM_BOT_TOKEN — initData will be empty and the app sees an anonymous visitor')
+			if (!settings.botToken) config.logger.warn('[tma] no TELEGRAM_BOT_TOKEN — initData will be empty and the app sees an anonymous visitor')
 		},
 
 		configureServer(server) {
@@ -166,8 +124,7 @@ export function tma(options: Options = {}): Plugin {
 						const body = Buffer.concat(chunks)
 						try {
 							const html = body.toString('utf8')
-							const injectable = html.includes('</head>') && !html.includes(MARKER_ATTR)
-							write(injectable ? Buffer.from(html.replace('</head>', `${await bootTag()}</head>`)) : body)
+							write(injectable(html) ? Buffer.from(inject(html, await bootTag())) : body)
 						} catch (error) {
 							server.config.logger.error(`[tma] failed to inject into the HTML: ${String(error)}`)
 							write(body)
@@ -184,9 +141,8 @@ export function tma(options: Options = {}): Plugin {
 			server.middlewares.use(USERS_ENDPOINT, async (req, res) => {
 				try {
 					const query = new URL(req.url ?? '/', 'http://localhost').searchParams.get('q') ?? ''
-					const found = (await roster()).filter((user) => matches(user, query))
 					res.setHeader('content-type', 'application/json')
-					res.end(JSON.stringify({ users: found.slice(0, ROSTER_LIMIT), total: found.length } satisfies RosterPage))
+					res.end(JSON.stringify(searchRoster(await roster(), query)))
 				} catch (error) {
 					res.statusCode = 500
 					res.end(String(error))
