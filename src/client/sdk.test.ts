@@ -22,7 +22,7 @@ const PAYLOAD: Payload = {
 
 type LaunchParams = { tgWebAppStartParam?: string; tgWebAppData?: string }
 type Viewport = { height: number; is_expanded: boolean; is_state_stable: boolean }
-type Env = { launchParams: LaunchParams; call(method: string): void; emitted: ReturnType<typeof vi.fn> }
+type Env = { launchParams: LaunchParams; send(method: string, params?: unknown): void; emitted: ReturnType<typeof vi.fn>; unhandled: ReturnType<typeof vi.fn> }
 
 async function install(payload: Payload): Promise<Env> {
 	vi.resetModules()
@@ -41,7 +41,8 @@ async function install(payload: Payload): Promise<Env> {
 		emitEvent: emitted,
 	})
 
-	return { launchParams, emitted, call: (method) => onEvent([method, undefined], () => {}) }
+	const unhandled = vi.fn()
+	return { launchParams, emitted, unhandled, send: (method, params) => onEvent([method, params], unhandled) }
 }
 
 const launchParams = async (payload: Payload) => (await install(payload)).launchParams
@@ -58,10 +59,23 @@ test('leaves the launch param out when there is no deep link, rather than passin
 	expect((await launchParams(PAYLOAD)).tgWebAppStartParam).toBeUndefined()
 })
 
+test('prints the haptics the sdk asks for, instead of leaving them to the default handler', async () => {
+	const env = await install(PAYLOAD)
+	const info = vi.spyOn(console, 'info').mockImplementation(() => {})
+
+	env.send('web_app_trigger_haptic_feedback', { type: 'impact', impact_style: 'medium' })
+	env.send('web_app_trigger_haptic_feedback', { type: 'notification', notification_type: 'error' })
+	env.send('web_app_trigger_haptic_feedback', { type: 'selection_change' })
+
+	expect(info.mock.calls.flat()).toEqual(['[tma] haptic → impact: medium', '[tma] haptic → notification: error', '[tma] haptic → selection'])
+	expect(env.unhandled).not.toHaveBeenCalled()
+	info.mockRestore()
+})
+
 test('answers web_app_request_viewport with the current expanded state', async () => {
 	const env = await install(PAYLOAD)
 
-	env.call('web_app_request_viewport')
+	env.send('web_app_request_viewport')
 
 	const [event, params] = env.emitted.mock.calls.at(-1) as [string, Viewport]
 	expect(event).toBe('viewport_changed')
@@ -72,10 +86,10 @@ test('expands on web_app_expand and reports the new height', async () => {
 	const env = await install(PAYLOAD)
 	const { setExpanded } = await import('./viewport.js')
 	setExpanded(false)
-	env.call('web_app_request_viewport')
+	env.send('web_app_request_viewport')
 	const collapsed = (env.emitted.mock.calls.at(-1) as [string, Viewport])[1]
 
-	env.call('web_app_expand')
+	env.send('web_app_expand')
 
 	const [event, params] = env.emitted.mock.calls.at(-1) as [string, Viewport]
 	expect(event).toBe('viewport_changed')

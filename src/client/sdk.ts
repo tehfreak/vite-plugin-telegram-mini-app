@@ -3,6 +3,7 @@ import { type ButtonParams, createBackButton, createMainButton } from './chrome.
 import { detectEnvironment } from './environment.js'
 import { mountInspector } from './inspector.js'
 import { erudaOpener } from './eruda.js'
+import { logHaptic } from './haptic.js'
 import { mountSwitcher } from './switcher.js'
 import { currentTheme, initTheme, onTheme } from './theme.js'
 import { height, isExpanded, keyboardShown, onViewport, setExpanded } from './viewport.js'
@@ -71,6 +72,11 @@ export function installSdk(payload: Payload, deps: { mockTelegramEnv: MockTelegr
 			case 'web_app_open_tg_link':
 				window.open(`https://t.me${String((params as { path_full?: string }).path_full ?? '')}`, '_blank', 'noopener')
 				return
+			case 'web_app_trigger_haptic_feedback': {
+				const { type, impact_style, notification_type } = params as { type?: string; impact_style?: string; notification_type?: string }
+				logHaptic(type === 'selection_change' ? 'selection' : (type ?? 'unknown'), impact_style ?? notification_type)
+				return
+			}
 			case 'web_app_close':
 				window.close()
 				return

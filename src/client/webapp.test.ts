@@ -46,6 +46,27 @@ test('exposes the heights as accessors rather than copied numbers', async () => 
 	expect(typeof Object.getOwnPropertyDescriptor(app, 'viewportStableHeight')?.get).toBe('function')
 })
 
+test('prints every haptic call, since a browser has nothing to vibrate', async () => {
+	const { app } = await createApp()
+	const info = vi.spyOn(console, 'info').mockImplementation(() => {})
+
+	app.HapticFeedback.impactOccurred('heavy')
+	app.HapticFeedback.notificationOccurred('success')
+	app.HapticFeedback.selectionChanged()
+
+	expect(info.mock.calls.flat()).toEqual(['[tma] haptic → impact: heavy', '[tma] haptic → notification: success', '[tma] haptic → selection'])
+	info.mockRestore()
+})
+
+test('returns the haptic object, so a chained call does not hit undefined', async () => {
+	const { app } = await createApp()
+	vi.spyOn(console, 'info').mockImplementation(() => {})
+
+	expect(app.HapticFeedback.impactOccurred('light')).toBe(app.HapticFeedback)
+	expect(app.HapticFeedback.selectionChanged()).toBe(app.HapticFeedback)
+	vi.restoreAllMocks()
+})
+
 test('reports isExpanded live, not as it was when the mock was built', async () => {
 	const { app, viewport } = await createApp()
 	expect(app.isExpanded).toBe(true)

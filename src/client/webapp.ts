@@ -1,6 +1,7 @@
 import type { Payload } from '../types.js'
 import { createBackButton, createMainButton } from './chrome.js'
 import { whenReady } from './dom.js'
+import { logHaptic } from './haptic.js'
 import { applyThemeVariables, currentTheme, onTheme } from './theme.js'
 import { height, isExpanded as expandedNow, keyboardShown, onViewport, setExpanded, stableHeight } from './viewport.js'
 
@@ -8,6 +9,22 @@ type Handler = (...args: unknown[]) => void
 
 const noop = () => {}
 const warn = (method: string) => console.warn(`[tma] ${method}() needs real Telegram — the call was ignored`)
+
+// Chainable, the way telegram-web-app.js writes it: impactOccurred('light').selectionChanged().
+const haptic = {
+	impactOccurred(style: string) {
+		logHaptic('impact', style)
+		return haptic
+	},
+	notificationOccurred(type: string) {
+		logHaptic('notification', type)
+		return haptic
+	},
+	selectionChanged() {
+		logHaptic('selection')
+		return haptic
+	},
+}
 
 function createCloudStorage() {
 	const key = (name: string) => `tma-mock:cloud:${name}`
@@ -99,7 +116,7 @@ export function createWebApp(payload: Payload) {
 
 		BackButton: withClicks('backButtonClicked', createBackButton),
 		MainButton: withClicks('mainButtonClicked', (press) => createMainButton(press, theme.params)),
-		HapticFeedback: { impactOccurred: noop, notificationOccurred: noop, selectionChanged: noop },
+		HapticFeedback: haptic,
 		CloudStorage: createCloudStorage(),
 
 		ready: noop,

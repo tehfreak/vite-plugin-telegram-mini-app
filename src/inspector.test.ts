@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-const MOCK_ONLY = ['switcher', 'webapp', 'sdk', 'chrome', 'theme', 'viewport']
+const MOCK_ONLY = ['switcher', 'webapp', 'sdk', 'chrome', 'theme', 'viewport', 'haptic']
 
 function graph(entry: string, seen = new Set<string>()): Set<string> {
 	if (seen.has(entry)) return seen
