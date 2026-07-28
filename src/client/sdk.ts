@@ -87,6 +87,7 @@ export function installSdk(payload: Payload, deps: { mockTelegramEnv: MockTelegr
 			launchParams: {
 				// The SDK asks for the raw format here; anything parsed breaks initData.
 				tgWebAppData: payload.initData || undefined,
+				tgWebAppStartParam: payload.startParam || undefined,
 				tgWebAppThemeParams: theme.params,
 				tgWebAppVersion: '8.0',
 				tgWebAppPlatform: payload.platform,

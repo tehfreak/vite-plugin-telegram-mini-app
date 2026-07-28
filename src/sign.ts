@@ -1,12 +1,13 @@
 import { createHmac } from 'node:crypto'
 import type { TelegramUser } from './types.js'
 
-export function signInitData(user: TelegramUser, botToken: string, authDate = Math.floor(Date.now() / 1000)): string {
+export function signInitData(user: TelegramUser, botToken: string, authDate = Math.floor(Date.now() / 1000), startParam = ''): string {
 	const params = new URLSearchParams()
 	params.set('user', JSON.stringify({ ...user, id: Number(user.id) }))
 	params.set('auth_date', String(authDate))
 	params.set('query_id', 'dev')
 	params.set('signature', 'tma-mock')
+	if (startParam) params.set('start_param', startParam)
 
 	const dataCheckString = [...params]
 		.sort(([a], [b]) => a.localeCompare(b))

@@ -11,6 +11,7 @@ const PAYLOAD: Payload = {
 	themes: THEMES,
 	platform: 'tdesktop',
 	version: '7.0',
+	startParam: '',
 	overrides: {},
 	browser: false,
 	panel: false,

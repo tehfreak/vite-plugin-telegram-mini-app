@@ -11,6 +11,7 @@ const PAYLOAD: Payload = {
 	themes: THEMES,
 	platform: 'tdesktop',
 	version: '7.0',
+	startParam: '',
 	overrides: {},
 	browser: false,
 	panel: true,
@@ -23,13 +24,13 @@ const roster = { users: [{ id: 1, first_name: 'Ann' }], total: 1 }
 
 let fetched: ReturnType<typeof vi.fn>
 
-async function mount(): Promise<HTMLElement> {
+async function mount(payload: Payload = PAYLOAD): Promise<HTMLElement> {
 	vi.resetModules()
 	document.getElementById('tma-panel')?.remove()
 	const { initTheme } = await import('./theme.js')
 	const { mountSwitcher } = await import('./switcher.js')
-	initTheme(PAYLOAD)
-	mountSwitcher(PAYLOAD)
+	initTheme(payload)
+	mountSwitcher(payload)
 	return document.getElementById('tma-panel')!.shadowRoot!.querySelector<HTMLElement>('[data-tma-panel]')!
 }
 
@@ -42,11 +43,22 @@ const open = (badge: HTMLElement) => {
 
 const tab = (shell: HTMLElement, title: string) => [...shell.querySelectorAll('button')].find((button) => button.textContent === title)!
 
+const environment = (shell: HTMLElement) => tab(shell, 'environment').click()
+
+const deepLink = (shell: HTMLElement) => [...shell.querySelectorAll('button')].find((button) => button.textContent?.includes('Deep link'))!
+
+const field = (shell: HTMLElement) => shell.querySelector<HTMLInputElement>('input[placeholder="ref-42"]')
+
+const body = (call: unknown[]) => JSON.parse((call[1] as { body: string }).body) as unknown
+
+const stateCalls = () => fetched.mock.calls.filter((call) => call[0] === PAYLOAD.endpoint)
+
 beforeEach(() => {
 	sessionStorage.clear()
 	localStorage.clear()
 	fetched = vi.fn(async () => ({ json: async () => roster }))
 	vi.stubGlobal('fetch', fetched)
+	vi.spyOn(location, 'reload').mockImplementation(() => {})
 })
 
 test('does not ask the server for the roster until the panel is opened', async () => {
@@ -68,6 +80,71 @@ test('asks for the roster once, not on every open', async () => {
 	open(badge)
 
 	expect(fetched).toHaveBeenCalledTimes(1)
+})
+
+test('offers no start_param field until the deep link is switched on', async () => {
+	const shell = open(await mount())
+	environment(shell)
+
+	expect(field(shell)).toBeNull()
+
+	deepLink(shell).click()
+
+	expect(field(shell)).not.toBeNull()
+})
+
+test('starts switched on and filled when the page was signed with a start_param', async () => {
+	const shell = open(await mount({ ...PAYLOAD, startParam: 'ref-42' }))
+	environment(shell)
+
+	expect(field(shell)!.value).toBe('ref-42')
+	expect(deepLink(shell).dataset.active).toBe('true')
+})
+
+test('saves the typed start_param as an override and reloads', async () => {
+	const shell = open(await mount())
+	environment(shell)
+	deepLink(shell).click()
+
+	const input = field(shell)!
+	input.value = 'ref-42'
+	input.dispatchEvent(new Event('change'))
+
+	expect(body(stateCalls().at(-1)!)).toEqual({ overrides: { startParam: 'ref-42' } })
+	await vi.waitFor(() => expect(location.reload).toHaveBeenCalled())
+})
+
+test('drops the start_param when the deep link is switched off', async () => {
+	const shell = open(await mount({ ...PAYLOAD, startParam: 'ref-42' }))
+	environment(shell)
+
+	deepLink(shell).click()
+
+	expect(body(stateCalls().at(-1)!)).toEqual({ overrides: { startParam: '' } })
+	expect(field(shell)).toBeNull()
+})
+
+test('does not touch the server when the deep link is switched off with nothing to drop', async () => {
+	const shell = open(await mount())
+	environment(shell)
+
+	deepLink(shell).click()
+	deepLink(shell).click()
+
+	expect(stateCalls()).toHaveLength(0)
+	expect(location.reload).not.toHaveBeenCalled()
+})
+
+test('keeps the start_param box across a rebuild, so a half typed link is not dropped', async () => {
+	const shell = open(await mount({ ...PAYLOAD, startParam: 'ref-42' }))
+	environment(shell)
+	const input = field(shell)!
+
+	input.value = 'ref-4'
+	environment(shell)
+
+	expect(field(shell)).toBe(input)
+	expect(input.value).toBe('ref-4')
 })
 
 test('keeps the search box across a rebuild, so the typed text is not dropped', async () => {

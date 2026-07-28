@@ -43,17 +43,21 @@ A draggable button appears in the corner. Clicking it opens the panel, which has
 - **Identity** switches between the users you passed, an unregistered guest with a random id, and
   anonymous. Anonymous means an empty `initData`, which is what Telegram itself sends for
   keyboard-button and inline-mode launches.
-- **Environment** holds browser mode, theme, a simulated keyboard, an expired signature, platform and
-  version.
+- **Environment** holds browser mode, theme, a simulated keyboard, `start_param`, an expired
+  signature, platform and version.
 - **Data** shows the signed `initData` parsed by field, a live snapshot of `window.Telegram.WebApp`,
   and a copy button.
 
 Theme and keyboard apply immediately and fire `themeChanged` / `viewportChanged`. The rest changes
 the signature, so the page reloads. Selections persist across reloads until reset.
 
-Two of those states deserve a note. **Browser mode** installs no mock at all, so the app takes its
+Three of those states deserve a note. **Browser mode** installs no mock at all, so the app takes its
 "not in Telegram" path: `isTMA()` is false and `retrieveLaunchParams()` throws. **Expired signature**
 keeps the hash valid but dates `auth_date` a day back, so a correct backend rejects it.
+**Deep link** is off unless you switch it on or set the option, because an app opened from a chat
+carries no `start_param` at all. Switched on, the value is signed into `initData`, so the app reads
+it from `initDataUnsafe.start_param` and the SDK from `retrieveLaunchParams().tgWebAppStartParam`,
+exactly as with a real link.
 
 The roster is fetched when the panel opens rather than inlined into every page, since `users` may
 query a database. Search runs on the server and returns the first 20 matches.
@@ -89,6 +93,7 @@ imported from it, and a test walks the built import graph to keep it that way.
 | `theme`     | `'auto'`                         | `light`, `dark`, or follow `prefers-color-scheme`      |
 | `platform`  | `'tdesktop'`                     | `WebApp.platform`                                      |
 | `version`   | `'7.0'`                          | `WebApp.version`                                       |
+| `startParam`| `''`                             | Deep link payload, as from a `?startapp=` link         |
 | `panel`     | `true`                           | Show the panel                                         |
 | `eruda`     | `true`                           | Show the console button; eruda loads on click          |
 | `stateFile` | Vite cache                       | Where the selected identity is stored                  |

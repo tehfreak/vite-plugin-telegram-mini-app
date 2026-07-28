@@ -42,6 +42,7 @@ export function tma(options: Options = {}): Plugin {
 	const theme = options.theme ?? 'auto'
 	const platform = options.platform ?? 'tdesktop'
 	const version = options.version ?? '7.0'
+	const startParam = options.startParam ?? ''
 	const panel = options.panel ?? true
 	const eruda = options.eruda ?? true
 
@@ -80,7 +81,8 @@ export function tma(options: Options = {}): Plugin {
 	async function payload(): Promise<Payload> {
 		const { user, overrides } = readState(stateFile)
 		const authDate = overrides.expired ? Math.floor(Date.now() / 1000) - EXPIRED_OFFSET_SECONDS : undefined
-		const initData = user && botToken ? signInitData(user, botToken, authDate) : ''
+		const start = overrides.startParam ?? startParam
+		const initData = user && botToken ? signInitData(user, botToken, authDate, start) : ''
 
 		return {
 			initData,
@@ -90,6 +92,7 @@ export function tma(options: Options = {}): Plugin {
 			themes: THEMES,
 			platform: overrides.platform ?? platform,
 			version: overrides.version ?? version,
+			startParam: start,
 			overrides,
 			browser: overrides.browser === true,
 			panel,

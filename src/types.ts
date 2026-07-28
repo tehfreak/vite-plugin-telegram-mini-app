@@ -29,6 +29,8 @@ export type Options = {
 	theme?: ThemeSetting
 	platform?: string
 	version?: string
+	/** Deep link payload, as if the app were opened by a link with `?startapp=`. Goes into the signed `initData`. */
+	startParam?: string
 	panel?: boolean
 	/** The "Open console" button in the panel. eruda itself loads lazily, on click. */
 	eruda?: boolean
@@ -40,6 +42,7 @@ export type Overrides = {
 	theme?: ThemeSetting
 	platform?: string
 	version?: string
+	startParam?: string
 	/** Sign with a day-old `auth_date` so the backend has to reject such initData. The hash stays valid, only the age is off. */
 	expired?: boolean
 	/**
@@ -59,6 +62,7 @@ export type Payload = {
 	themes: Record<ThemeName, Record<string, string>>
 	platform: string
 	version: string
+	startParam: string
 	overrides: Overrides
 	browser: boolean
 	panel: boolean

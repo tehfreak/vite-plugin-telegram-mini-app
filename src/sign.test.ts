@@ -48,6 +48,21 @@ describe('signInitData', () => {
 		expect(verify(tampered)).toBeNull()
 	})
 
+	it('signs start_param in, the way a direct link does', () => {
+		const verified = verify(signInitData({ id: 1, first_name: 'A' }, BOT_TOKEN, undefined, 'ref-42'))
+		expect(verified!.start_param).toBe('ref-42')
+	})
+
+	it('leaves start_param out when there is none, rather than sending an empty one', () => {
+		const verified = verify(signInitData({ id: 1, first_name: 'A' }, BOT_TOKEN))
+		expect(verified).not.toHaveProperty('start_param')
+	})
+
+	it('signs start_param too, so editing the deep link breaks the hash', () => {
+		const tampered = signInitData({ id: 1, first_name: 'A' }, BOT_TOKEN, undefined, 'ref-42').replace('ref-42', 'ref-43')
+		expect(verify(tampered)).toBeNull()
+	})
+
 	it('fails verification against a different token', () => {
 		expect(verify(signInitData({ id: 1, first_name: 'A' }, BOT_TOKEN), 'other-token')).toBeNull()
 	})
@@ -64,5 +79,10 @@ describe('toUnsafe', () => {
 		expect(unsafe.user).toMatchObject({ id: 7, first_name: 'Ann', last_name: 'Lee' })
 		expect(typeof unsafe.auth_date).toBe('number')
 		expect(typeof unsafe.hash).toBe('string')
+	})
+
+	it('hands start_param to the app under the name telegram-web-app.js uses', () => {
+		const unsafe = toUnsafe(signInitData({ id: 7, first_name: 'Ann' }, BOT_TOKEN, undefined, 'ref-42'))
+		expect(unsafe.start_param).toBe('ref-42')
 	})
 })

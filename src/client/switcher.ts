@@ -8,6 +8,8 @@ const PLATFORMS = ['tdesktop', 'android', 'ios', 'web']
 const VERSIONS = ['6.0', '7.0', '8.0']
 const THEME_SETTINGS: ThemeSetting[] = ['light', 'dark', 'auto']
 
+const INPUT_CSS = 'width:100%;margin-bottom:6px;padding:6px 8px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit;font-size:12px'
+
 const newcomer = (): TelegramUser => ({ id: 900_000_000 + Math.floor(Math.random() * 1_000_000), first_name: 'Dev Newcomer' })
 
 const label = (user: TelegramUser | null) => (user ? [user.first_name, user.last_name].filter(Boolean).join(' ') : 'anonymous')
@@ -59,13 +61,20 @@ export function mountSwitcher(payload: Payload, eruda?: () => void) {
 
 	const toggle = (title: string, subtitle: string, on: boolean, onPick: () => void) => row(`${on ? '● ' : '○ '}${title}`, subtitle, on, onPick)
 
-	const search = element('input', 'width:100%;margin-bottom:6px;padding:6px 8px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit;font-size:12px') as HTMLInputElement
+	const search = element('input', INPUT_CSS) as HTMLInputElement
 	search.placeholder = 'Search by name, @username or id'
 	search.addEventListener('input', () => {
 		query = search.value
 		clearTimeout(timer)
 		timer = window.setTimeout(() => void loadRoster(), 200)
 	})
+
+	let deepLink = payload.startParam !== ''
+
+	const startParam = element('input', INPUT_CSS) as HTMLInputElement
+	startParam.placeholder = 'ref-42'
+	startParam.value = payload.startParam
+	startParam.addEventListener('change', () => void patch(payload, { overrides: { startParam: startParam.value } }))
 
 	const list = element('div', '')
 
@@ -114,6 +123,19 @@ export function mountSwitcher(payload: Payload, eruda?: () => void) {
 				build()
 			}),
 		)
+
+		panel.append(heading('start_param'))
+		panel.append(
+			toggle('Deep link', 'opened by a ?startapp= link, not from the chat', deepLink, () => {
+				deepLink = !deepLink
+				if (!deepLink && payload.startParam) void patch(payload, { overrides: { startParam: '' } })
+				build()
+			}),
+		)
+		if (deepLink) {
+			panel.append(startParam)
+			panel.append(element('div', 'padding:0 4px 4px;font-size:11px;opacity:.6', 'Signed into initData, so applying reloads. Enter or focus out to apply.'))
+		}
 
 		panel.append(heading('signature'))
 		panel.append(toggle('Expired', 'auth_date a day old — the backend must reject it', payload.overrides.expired === true, () => patch(payload, { overrides: { expired: !payload.overrides.expired } })))
