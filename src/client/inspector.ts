@@ -2,6 +2,10 @@ import { createPanel, element } from './dom.js'
 import { launchParams, webApp } from './environment.js'
 import { copyButton, heading, initDataRows, jsonBlock, parseJson, snapshot, table, tabStrip } from './readout.js'
 
+function themeParams(): Record<string, string> {
+	return webApp()?.themeParams ?? (parseJson(launchParams().get('tgWebAppThemeParams')) as Record<string, string> | null) ?? {}
+}
+
 function rawInitData(): string {
 	const stored = sessionStorage.getItem('tapps/launchParams')
 	return webApp()?.initData || launchParams().get('tgWebAppData') || (stored ? (new URLSearchParams(stored.replace(/^"|"$/g, '')).get('tgWebAppData') ?? '') : '')
@@ -18,7 +22,7 @@ export function mountInspector(eruda?: () => void) {
 		const raw = rawInitData()
 		const { user, init } = initDataRows(raw)
 		const hash = launchParams()
-		const themeParams = app?.themeParams ?? (parseJson(hash.get('tgWebAppThemeParams')) as Record<string, string> | null) ?? {}
+		const params = themeParams()
 
 		panel.replaceChildren()
 
@@ -64,11 +68,14 @@ export function mountInspector(eruda?: () => void) {
 				]),
 			)
 		} else {
-			panel.append(heading('themeParams'), table(Object.entries(themeParams)))
+			panel.append(heading('themeParams'), table(Object.entries(params)))
 		}
 
-		paint(themeParams)
+		paint(params)
 	}
 
 	onOpen(build)
+
+	paint(themeParams())
+	webApp()?.onEvent?.('themeChanged', () => paint(themeParams()))
 }

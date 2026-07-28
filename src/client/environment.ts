@@ -12,6 +12,7 @@ type WebAppLike = {
 	isExpanded?: boolean
 	safeAreaInset?: Record<string, number>
 	contentSafeAreaInset?: Record<string, number>
+	onEvent?: (event: string, handler: () => void) => void
 }
 
 export const webApp = (): WebAppLike | undefined => (window as unknown as { Telegram?: { WebApp?: WebAppLike } }).Telegram?.WebApp

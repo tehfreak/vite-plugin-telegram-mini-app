@@ -95,6 +95,7 @@ export function jsonBlock(value: unknown): HTMLElement {
 		'pre',
 		'margin:0;padding:8px;border-radius:8px;background:rgba(127,127,127,.12);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;line-height:1.5;white-space:pre;overflow-x:auto;max-width:100%',
 	)
+	block.className = 'scroll'
 	block.textContent = JSON.stringify(value, null, 2)
 	return block
 }

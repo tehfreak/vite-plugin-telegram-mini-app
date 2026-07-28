@@ -4,6 +4,10 @@ const BASE_CSS = `
 	* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif }
 	button { font: inherit; cursor: pointer; border: none }
 	.pane { pointer-events: auto }
+	.scroll { scrollbar-width: thin; scrollbar-color: rgba(127,127,127,.45) transparent }
+	.scroll::-webkit-scrollbar { width: 4px; height: 4px }
+	.scroll::-webkit-scrollbar-track { background: transparent }
+	.scroll::-webkit-scrollbar-thumb { border-radius: 4px; background: rgba(127,127,127,.45) }
 `
 
 const HOST_ID = 'tma-panel'
@@ -82,6 +86,7 @@ export function createPanel(options: { eruda?: () => void } = {}): Panel | null 
 	)
 	const shell = element('div', 'position:fixed;display:none;flex-direction:column;padding:8px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.35)')
 	const panel = element('div', 'overflow:auto;flex:1;min-height:0')
+	panel.className = 'scroll'
 	const footer = element('div', 'display:flex;flex-direction:column;gap:4px;padding-top:8px;margin-top:8px;border-top:1px solid rgba(127,127,127,.25)')
 	const hide = element('button', 'display:block;width:100%;padding:6px;border-radius:8px;font-size:11px;opacity:.7', 'Hide button until reload')
 
