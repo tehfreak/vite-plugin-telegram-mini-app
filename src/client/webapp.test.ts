@@ -20,14 +20,16 @@ const PAYLOAD: Payload = {
 	usersEndpoint: '/__tma/users',
 }
 
-async function createApp() {
+async function createApp(payload: Payload = PAYLOAD) {
 	vi.resetModules()
 	document.getElementById('tma-panel')?.remove()
 	const { initTheme } = await import('./theme.js')
 	const { createWebApp } = await import('./webapp.js')
-	initTheme(PAYLOAD)
-	return { app: createWebApp(PAYLOAD), viewport: await import('./viewport.js') }
+	initTheme(payload)
+	return { app: createWebApp(payload), viewport: await import('./viewport.js') }
 }
+
+const supports = async (version: string, want: string) => (await createApp({ ...PAYLOAD, version })).app.isVersionAtLeast(want)
 
 test('reads the viewport through getters, so a value taken before the app is ready is never stale', async () => {
 	const { app, viewport } = await createApp()
@@ -44,6 +46,23 @@ test('exposes the heights as accessors rather than copied numbers', async () => 
 
 	expect(typeof Object.getOwnPropertyDescriptor(app, 'viewportHeight')?.get).toBe('function')
 	expect(typeof Object.getOwnPropertyDescriptor(app, 'viewportStableHeight')?.get).toBe('function')
+})
+
+test('gates features on the version the panel is set to', async () => {
+	expect(await supports('7.0', '6.0')).toBe(true)
+	expect(await supports('7.0', '7.0')).toBe(true)
+	expect(await supports('7.0', '7.1')).toBe(false)
+	expect(await supports('7.0', '8.0')).toBe(false)
+})
+
+test('compares the minor as a number, not as text, so 7.10 is newer than 7.9', async () => {
+	expect(await supports('7.10', '7.9')).toBe(true)
+	expect(await supports('7.9', '7.10')).toBe(false)
+})
+
+test('treats a missing minor as zero, the way a client reporting plain 8 would', async () => {
+	expect(await supports('8', '8.0')).toBe(true)
+	expect(await supports('8', '8.1')).toBe(false)
 })
 
 test('prints every haptic call, since a browser has nothing to vibrate', async () => {
