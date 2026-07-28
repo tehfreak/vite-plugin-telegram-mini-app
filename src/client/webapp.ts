@@ -2,7 +2,7 @@ import type { Payload } from '../types.js'
 import { createBackButton, createMainButton } from './chrome.js'
 import { whenReady } from './dom.js'
 import { applyThemeVariables, currentTheme, onTheme } from './theme.js'
-import { height, keyboardShown, onViewport, stableHeight } from './viewport.js'
+import { height, isExpanded as expandedNow, keyboardShown, onViewport, setExpanded, stableHeight } from './viewport.js'
 
 type Handler = (...args: unknown[]) => void
 
@@ -84,7 +84,9 @@ export function createWebApp(payload: Payload) {
 		platform: payload.platform,
 		colorScheme: theme.name,
 		themeParams: theme.params,
-		isExpanded: true,
+		get isExpanded() {
+			return expandedNow()
+		},
 		get viewportHeight() {
 			return height()
 		},
@@ -101,7 +103,7 @@ export function createWebApp(payload: Payload) {
 		CloudStorage: createCloudStorage(),
 
 		ready: noop,
-		expand: noop,
+		expand: () => setExpanded(true),
 		close: () => window.close(),
 
 		isVersionAtLeast(version: string) {

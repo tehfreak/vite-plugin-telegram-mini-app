@@ -43,17 +43,22 @@ A draggable button appears in the corner. Clicking it opens the panel, which has
 - **Identity** switches between the users you passed, an unregistered guest with a random id, and
   anonymous. Anonymous means an empty `initData`, which is what Telegram itself sends for
   keyboard-button and inline-mode launches.
-- **Environment** holds browser mode, theme, a simulated keyboard, `start_param`, an expired
-  signature, platform and version.
+- **Environment** holds browser mode, theme, a collapsed viewport, a simulated keyboard,
+  `start_param`, an expired signature, platform and version.
 - **Data** shows the signed `initData` parsed by field, a live snapshot of `window.Telegram.WebApp`,
   and a copy button.
 
-Theme and keyboard apply immediately and fire `themeChanged` / `viewportChanged`. The rest changes
-the signature, so the page reloads. Selections persist across reloads until reset.
+Theme, collapsed viewport and keyboard apply immediately and fire `themeChanged` /
+`viewportChanged`. The rest changes the signature, so the page reloads. Selections persist across
+reloads until reset, except the two viewport toggles, which are client state and start over.
 
 Three of those states deserve a note. **Browser mode** installs no mock at all, so the app takes its
 "not in Telegram" path: `isTMA()` is false and `retrieveLaunchParams()` throws. **Expired signature**
 keeps the hash valid but dates `auth_date` a day back, so a correct backend rejects it.
+**Collapsed** is how a mini app opens on a phone: `isExpanded` is false and the viewport is about
+half the window until `expand()` is called. The mock starts expanded, like the desktop client, and
+`WebApp.expand()` or `web_app_expand` really expands it.
+
 **Deep link** is off unless you switch it on or set the option, because an app opened from a chat
 carries no `start_param` at all. Switched on, the value is signed into `initData`, so the app reads
 it from `initDataUnsafe.start_param` and the SDK from `retrieveLaunchParams().tgWebAppStartParam`,

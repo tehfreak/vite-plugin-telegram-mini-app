@@ -46,6 +46,37 @@ test('exposes the heights as accessors rather than copied numbers', async () => 
 	expect(typeof Object.getOwnPropertyDescriptor(app, 'viewportStableHeight')?.get).toBe('function')
 })
 
+test('reports isExpanded live, not as it was when the mock was built', async () => {
+	const { app, viewport } = await createApp()
+	expect(app.isExpanded).toBe(true)
+
+	viewport.setExpanded(false)
+
+	expect(app.isExpanded).toBe(false)
+})
+
+test('expand() actually expands, so an app that asks for room gets it', async () => {
+	const { app, viewport } = await createApp()
+	viewport.setExpanded(false)
+	const collapsed = app.viewportHeight
+
+	app.expand()
+
+	expect(app.isExpanded).toBe(true)
+	expect(app.viewportHeight).toBeGreaterThan(collapsed)
+})
+
+test('fires viewportChanged when the app expands, the way the client does', async () => {
+	const { app, viewport } = await createApp()
+	viewport.setExpanded(false)
+	const changed = vi.fn()
+	app.onEvent('viewportChanged', changed)
+
+	app.expand()
+
+	expect(changed).toHaveBeenCalledWith({ isStateStable: true })
+})
+
 test('keeps the stable height apart from the one the keyboard shrinks', async () => {
 	const { app, viewport } = await createApp()
 

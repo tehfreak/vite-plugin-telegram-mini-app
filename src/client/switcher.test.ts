@@ -45,7 +45,11 @@ const tab = (shell: HTMLElement, title: string) => [...shell.querySelectorAll('b
 
 const environment = (shell: HTMLElement) => tab(shell, 'environment').click()
 
-const deepLink = (shell: HTMLElement) => [...shell.querySelectorAll('button')].find((button) => button.textContent?.includes('Deep link'))!
+const row = (shell: HTMLElement, title: string) => [...shell.querySelectorAll('button')].find((button) => button.textContent?.includes(title))!
+
+const deepLink = (shell: HTMLElement) => row(shell, 'Deep link')
+
+const collapsed = (shell: HTMLElement) => row(shell, 'Collapsed')
 
 const field = (shell: HTMLElement) => shell.querySelector<HTMLInputElement>('input[placeholder="ref-42"]')
 
@@ -145,6 +149,18 @@ test('keeps the start_param box across a rebuild, so a half typed link is not dr
 
 	expect(field(shell)).toBe(input)
 	expect(input.value).toBe('ref-4')
+})
+
+test('collapses the viewport from the panel, without asking the server', async () => {
+	const shell = open(await mount())
+	environment(shell)
+	const { isExpanded } = await import('./viewport.js')
+
+	collapsed(shell).click()
+
+	expect(isExpanded()).toBe(false)
+	expect(collapsed(shell).dataset.active).toBe('true')
+	expect(stateCalls()).toHaveLength(0)
 })
 
 test('keeps the search box across a rebuild, so the typed text is not dropped', async () => {

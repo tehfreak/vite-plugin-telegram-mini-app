@@ -2,7 +2,7 @@ import type { Overrides, Payload, RosterPage, TelegramUser, ThemeSetting } from 
 import { createPanel, element } from './dom.js'
 import { copyButton, heading, jsonBlock, snapshot, tabStrip } from './readout.js'
 import { currentSetting, currentTheme, onTheme, setTheme } from './theme.js'
-import { height as viewportHeight, keyboardShown, setKeyboard, stableHeight as viewportStableHeight } from './viewport.js'
+import { height as viewportHeight, isExpanded, keyboardShown, setExpanded, setKeyboard, stableHeight as viewportStableHeight } from './viewport.js'
 
 const PLATFORMS = ['tdesktop', 'android', 'ios', 'web']
 const VERSIONS = ['6.0', '7.0', '8.0']
@@ -118,6 +118,12 @@ export function mountSwitcher(payload: Payload, eruda?: () => void) {
 
 		panel.append(heading('viewport'))
 		panel.append(
+			toggle('Collapsed', 'isExpanded: false and half the height, as on a phone before expand()', !isExpanded(), () => {
+				setExpanded(!isExpanded())
+				build()
+			}),
+		)
+		panel.append(
 			toggle('Keyboard', 'viewportHeight < stable, isStateStable: false', keyboardShown(), () => {
 				setKeyboard(!keyboardShown())
 				build()
@@ -165,7 +171,7 @@ export function mountSwitcher(payload: Payload, eruda?: () => void) {
 			installed: !payload.browser,
 			overrides: payload.overrides,
 			theme: currentTheme(),
-			viewport: { height: viewportHeight(), stableHeight: viewportStableHeight(), isStateStable: !keyboardShown() },
+			viewport: { height: viewportHeight(), stableHeight: viewportStableHeight(), isExpanded: isExpanded(), isStateStable: !keyboardShown() },
 		}
 
 		panel.append(heading('everything the app sees'))

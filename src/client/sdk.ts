@@ -5,7 +5,7 @@ import { mountInspector } from './inspector.js'
 import { erudaOpener } from './eruda.js'
 import { mountSwitcher } from './switcher.js'
 import { currentTheme, initTheme, onTheme } from './theme.js'
-import { height, keyboardShown, onViewport } from './viewport.js'
+import { height, isExpanded, keyboardShown, onViewport, setExpanded } from './viewport.js'
 
 type EmitEvent = (event: string, payload?: unknown) => void
 
@@ -37,7 +37,7 @@ export function installSdk(payload: Payload, deps: { mockTelegramEnv: MockTelegr
 	const back = createBackButton(() => emitEvent('back_button_pressed'))
 	const main = createMainButton(() => emitEvent('main_button_pressed'), theme.params)
 
-	const viewport = () => ({ height: height(), width: window.innerWidth, is_expanded: true, is_state_stable: !keyboardShown() })
+	const viewport = () => ({ height: height(), width: window.innerWidth, is_expanded: isExpanded(), is_state_stable: !keyboardShown() })
 
 	onTheme((next) => {
 		theme = next
@@ -74,8 +74,10 @@ export function installSdk(payload: Payload, deps: { mockTelegramEnv: MockTelegr
 			case 'web_app_close':
 				window.close()
 				return
-			case 'web_app_ready':
 			case 'web_app_expand':
+				setExpanded(true)
+				return
+			case 'web_app_ready':
 				return
 			default:
 				next()
