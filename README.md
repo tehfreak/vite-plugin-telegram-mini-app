@@ -8,7 +8,7 @@ Run a Telegram Mini App in a plain browser during development, with a debug pane
 inside Telegram.
 
 The dev server signs a real `initData` with your bot token and installs a `window.Telegram.WebApp`
-façade. The signature is genuine, so the backend accepts it with no dev flag and no skipped
+facade. The signature is genuine, so the backend accepts it with no dev flag and no skipped
 validation. Inside a real Telegram webview the plugin installs nothing and the panel becomes a
 read-only inspector.
 
@@ -24,14 +24,14 @@ import { defineConfig } from 'vite'
 import { tma } from 'vite-plugin-telegram-mini-app'
 
 export default defineConfig({
-	plugins: [
-		tma({
-			users: [
-				{ id: 1001, first_name: 'Alice', last_name: 'Adams', username: 'example_telegram_alice' },
-				{ id: 1002, first_name: 'Bob', username: 'example_telegram_bob' },
-			],
-		}),
-	],
+  plugins: [
+    tma({
+      users: [
+        { id: 1001, first_name: 'Alice', last_name: 'Adams', username: 'example_telegram_alice' },
+        { id: 1002, first_name: 'Bob', username: 'example_telegram_bob' },
+      ],
+    }),
+  ],
 })
 ```
 
@@ -75,7 +75,7 @@ any of it.
 The plugin performs no access checks: gate the import by role, a stored flag or anything else you
 prefer. Note that the panel shows the user their own `initData` and offers to copy it.
 
-Mock code cannot reach this entry point: the switcher, the `WebApp` façade and the SDK glue are not
+Mock code cannot reach this entry point: the switcher, the `WebApp` facade and the SDK glue are not
 imported from it, and a test walks the built import graph to keep it that way.
 
 ## Options
