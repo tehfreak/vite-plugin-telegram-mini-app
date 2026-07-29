@@ -86,6 +86,22 @@ test('returns the haptic object, so a chained call does not hit undefined', asyn
 	vi.restoreAllMocks()
 })
 
+test('declares both safe area insets, an app reading top must not hit undefined', async () => {
+	const { app } = await createApp()
+
+	expect(app.safeAreaInset).toEqual({ top: 0, bottom: 0, left: 0, right: 0 })
+	expect(app.contentSafeAreaInset).toEqual({ top: 0, bottom: 0, left: 0, right: 0 })
+})
+
+test('hands out its own inset objects, so an app writing into one cannot spoil the other', async () => {
+	const { app } = await createApp()
+
+	app.safeAreaInset.top = 44
+
+	expect(app.contentSafeAreaInset.top).toBe(0)
+	expect((await createApp()).app.safeAreaInset.top).toBe(0)
+})
+
 test('reports isExpanded live, not as it was when the mock was built', async () => {
 	const { app, viewport } = await createApp()
 	expect(app.isExpanded).toBe(true)

@@ -6,7 +6,7 @@ import { erudaOpener } from './eruda.js'
 import { logHaptic } from './haptic.js'
 import { mountSwitcher } from './switcher.js'
 import { currentTheme, initTheme, onTheme } from './theme.js'
-import { height, isExpanded, keyboardShown, onViewport, setExpanded } from './viewport.js'
+import { NO_INSETS, height, isExpanded, keyboardShown, onViewport, setExpanded } from './viewport.js'
 
 type EmitEvent = (event: string, payload?: unknown) => void
 
@@ -15,8 +15,6 @@ type MockEvent = [string, unknown] | { name: string; params: unknown }
 type MockTelegramEnv = (options: { launchParams?: unknown; onEvent?: (event: MockEvent, next: () => void) => void; resetPostMessage?: boolean }) => void
 
 const normalize = (event: MockEvent): [string, unknown] => (Array.isArray(event) ? event : [event.name, event.params])
-
-const NO_INSETS = { top: 0, bottom: 0, left: 0, right: 0 }
 
 export function installSdk(payload: Payload, deps: { mockTelegramEnv: MockTelegramEnv; emitEvent: EmitEvent; loadEruda?: () => Promise<unknown> }) {
 	const eruda = erudaOpener(payload.eruda && (deps.loadEruda ?? true))

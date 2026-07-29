@@ -2,6 +2,10 @@
 const KEYBOARD_RATIO = 0.6
 const COLLAPSED_RATIO = 0.5
 
+export const NO_INSETS = { top: 0, bottom: 0, left: 0, right: 0 }
+
+export const insets = () => ({ ...NO_INSETS })
+
 let keyboard = false
 let expanded = true
 const listeners = new Set<() => void>()

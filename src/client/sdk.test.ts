@@ -110,6 +110,16 @@ test('prints the haptics the sdk asks for, instead of leaving them to the defaul
 	info.mockRestore()
 })
 
+test('answers both safe area requests, the same zeros the facade declares', async () => {
+	const env = await install(PAYLOAD)
+
+	env.send('web_app_request_safe_area')
+	expect(env.emitted).toHaveBeenLastCalledWith('safe_area_changed', { top: 0, bottom: 0, left: 0, right: 0 })
+
+	env.send('web_app_request_content_safe_area')
+	expect(env.emitted).toHaveBeenLastCalledWith('content_safe_area_changed', { top: 0, bottom: 0, left: 0, right: 0 })
+})
+
 test('answers web_app_request_viewport with the current expanded state', async () => {
 	const env = await install(PAYLOAD)
 

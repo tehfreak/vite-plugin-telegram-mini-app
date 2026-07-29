@@ -3,7 +3,7 @@ import { createBackButton, createMainButton } from './chrome.js'
 import { whenReady } from './dom.js'
 import { logHaptic } from './haptic.js'
 import { applyThemeVariables, currentTheme, onTheme } from './theme.js'
-import { height, isExpanded as expandedNow, keyboardShown, onViewport, setExpanded, stableHeight } from './viewport.js'
+import { height, insets, isExpanded as expandedNow, keyboardShown, onViewport, setExpanded, stableHeight } from './viewport.js'
 
 type Handler = (...args: unknown[]) => void
 
@@ -110,6 +110,8 @@ export function createWebApp(payload: Payload) {
 		get viewportStableHeight() {
 			return stableHeight()
 		},
+		safeAreaInset: insets(),
+		contentSafeAreaInset: insets(),
 		headerColor: theme.params.header_bg_color ?? '#ffffff',
 		backgroundColor: theme.params.bg_color ?? '#ffffff',
 		isClosingConfirmationEnabled: false,
